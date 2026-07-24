@@ -10,12 +10,15 @@ Imports:
     dplyr,
     tidyr,
     tibble,
+    officer,
     readr,
     purrr,
     ggplot2,
+    readxl,
     here,
     yaml,
     jsonlite,
+    broom,
     TernTables
 SystemRequirements:
     TinyTeX (LaTeX distribution) - automatically installed via tinytex::install_tinytex() if not present

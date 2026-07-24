@@ -30,6 +30,7 @@ $RECYCLE.BIN/
 *.lnk
 
 # R
+PKI_Scripts/
 .Rhistory
 .RData
 .Rapp.history
@@ -53,6 +54,7 @@ renv/staging/
 *.xlsx
 *.xls
 *.tsv
+.A/
 *.rds
 *.RData
 *.qs
@@ -82,3 +84,16 @@ Supplementary/Build_Logs/
 *.tar.gz
 *.7z
 session_info.txt
+
+# Scratch / diagnostics — never commit (may hold data-derived output)
+.A/
+
+# Additional raw/derived data formats (never committed; live in OneDrive)
+*.sav
+*.zsav
+*.dta
+*.por
+*.sas7bdat
+*.parquet
+*.feather
+*.xlsm

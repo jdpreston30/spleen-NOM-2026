@@ -224,3 +224,51 @@ cr <- function() {
   cat("  Comment lines extracted:", sum(grepl("^#[*+-]", output_lines)), "\n")
   invisible(NULL)
 }
+
+#' Run the Diagnostic Scratch Script
+#'
+#' Shorthand to source \code{.A/diagnostic.R} in the global environment for
+#' quick interactive checks against already-loaded objects (e.g. \code{raw}).
+#'
+#' @examples
+#' d()  # sources .A/diagnostic.R
+d <- function() {
+  path <- ".A/diagnostic.R"
+  if (!file.exists(path)) stop("File not found: ", path,
+                               "\n  Run from the project root directory.")
+  cat("Running", path, "\n")
+  source(path, echo = TRUE, local = FALSE)
+  invisible(NULL)
+}
+
+#' Run the Full Pipeline
+#'
+#' Shorthand to source \code{All_Run/run.R} in the global environment.
+#'
+#' @examples
+#' r()  # sources All_Run/run.R
+r <- function() {
+  path <- "All_Run/run.R"
+  if (!file.exists(path)) stop("File not found: ", path,
+                               "\n  Run from the project root directory.")
+  cat("Running", path, "\n")
+  source(path, echo = TRUE, local = FALSE)
+  invisible(NULL)
+}
+
+#' Run the Python Spreadsheet Cleaner
+#'
+#' Shorthand to run \code{.A/clean.py} (openpyxl cleanup on the raw workbook)
+#' without leaving the R console. Close the spreadsheet in Excel first, or the
+#' save will fail on a file lock.
+#'
+#' @examples
+#' cl()  # runs: python3 .A/clean.py
+cl <- function() {
+  path <- ".A/clean.py"
+  if (!file.exists(path)) stop("File not found: ", path,
+                               "\n  Run from the project root directory.")
+  cat("Running", path, "via python3\n")
+  status <- system2("python3", shQuote(path))
+  invisible(status)
+}
