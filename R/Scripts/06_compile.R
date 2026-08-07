@@ -18,8 +18,8 @@ ternB(
   cat("# Pipeline output (auto-written by run.R)\n\n")
 
   cat("## Stage dimensions\n\n```\n")
-  for (nm in c("raw", "raw_selected", "raw_pared", "raw_std", "raw_derived", "raw_outcomes",
-               "raw_clean", "raw_ready", "raw_corrected", "raw_named"))
+  for (nm in c("raw", "raw_selected", "raw_nom", "raw_pared", "raw_std", "raw_derived",
+               "raw_outcomes", "raw_clean", "raw_ready", "raw_corrected", "raw_named"))
     if (exists(nm)) cat(sprintf("%-14s %d x %d\n", nm, nrow(get(nm)), ncol(get(nm))))
   cat("```\n\n")
 
@@ -59,8 +59,34 @@ ternB(
   xt("AAST Grade", "Splenic Salvage")
   cat("```\n\n")
 
-  cat("## Table 4 — index success (n/N %)\n\n```\n");  print(as.data.frame(index_tbl));   cat("```\n\n")
-  cat("## Table 4 — splenic salvage (n/N %)\n\n```\n"); print(as.data.frame(salvage_tbl)); cat("```\n\n")
+  # Rendered tern table contents (incl. p-values) — defensive extraction across possible
+  # return shapes (flextable, data frame, or list containing either).
+  dump_tern <- function(obj, name) {
+    cat(sprintf("\n## %s (class: %s)\n\n```\n", name, paste(class(obj), collapse = "/")))
+    d <- NULL
+    if (inherits(obj, "flextable")) d <- obj$body$dataset
+    else if (is.data.frame(obj))    d <- obj
+    else if (is.list(obj)) {
+      dfs <- Filter(is.data.frame, obj)
+      if (length(dfs)) d <- dfs[[1]]
+      else {
+        fts <- Filter(function(x) inherits(x, "flextable"), obj)
+        if (length(fts)) d <- fts[[1]]$body$dataset
+      }
+    }
+    if (is.null(d)) cat("(could not extract; element names: ",
+                        paste(names(obj), collapse = ", "), ")\n")
+    else print(as.data.frame(d), row.names = FALSE)
+    cat("```\n")
+  }
+  for (nm in c("T1", "T2", "T4")) if (exists(nm)) dump_tern(get(nm), nm)
+
+  cat("## IR arm: embolized vs not (n)\n\n```\n")
+  print(table(raw_named$`IR Procedure`, raw_named$`Index Management Success`, useNA = "ifany",
+              dnn = c("IR Procedure", "Index Success")))
+  cat("```\n\n")
+  cat("## Table 3 — index success (n/N %)\n\n```\n");  print(as.data.frame(index_tbl));   cat("```\n\n")
+  cat("## Table 3 — splenic salvage (n/N %)\n\n```\n"); print(as.data.frame(salvage_tbl)); cat("```\n\n")
   cat("## Table 5 — univariable screen\n\n```\n");      print(as.data.frame(uni_tbl));     cat("```\n\n")
   cat("## Table 6 — multivariable NOM-failure model\n\n```\n"); print(as.data.frame(or_tbl)); cat("```\n")
 

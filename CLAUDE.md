@@ -129,6 +129,8 @@ New interactive shortcuts go here, documented with a roxygen-style comment block
 
 ## Pipeline (built out)
 
-`00a` env → `00b` setup → `00c` import → `00d` cleanup (drop → standardize → derive `management_strategy`/`ir_procedure`/`early_death`/`index_success`/`splenic_salvage` → Tier-2 types/flags → `MAP`/`MTP` → `raw_named` display frame) → `01` Table 1 (`ternD`) → `02` Table 2 by strategy (`ternG`) → `03` Table 3 by grade IV/V (`ternG`) → `04` Table 4 success+salvage (`summarize_success` + `ternStyle`) → `05` NOM-failure model (`glm` + `ternStyle`) → `06` compile to docx (`ternB`).
+**Cohort = NONOPERATIVE MANAGEMENT ONLY.** Per the surgical team, patients whose *index* management was operative (`ARM == 1`) are excluded from all analysis (they appear only as descriptive/figure context). Verified no `ARM 2/3` patient had an operation first. Patients who later required OR after failed NOM are retained — that is the NOM-failure outcome. `management_strategy` is therefore 2-level: **Observation vs Interventional Radiology** (IR is intention-to-treat and includes angiography without embolization; `ir_procedure` splits it).
 
-Object chain in `00d`: `raw → raw_selected → raw_pared → raw_std → raw_derived → raw_outcomes → raw_clean → raw_ready → raw_named`.
+`00a` env → `00b` setup → `00c` import → `00d` cleanup (inclusion → **NOM restriction** → drop → standardize → derive `management_strategy`/`ir_procedure`/`early_death`/`index_success`/`splenic_salvage` → Tier-2 types/flags → `MAP`/`MTP` → oddities → `raw_named` display frame) → `01` T1 (`ternD`) → `02` T2 Obs vs IR (`ternG`) → `03` T3 by grade IV/V (`ternG`) → `04` T4 success+salvage (`summarize_success` + `ternStyle`) → `05` T5 IR embolized-vs-not (`ternG`) → `06` T6/T7 univariable screen + NOM-failure model (`glm` + `ternStyle`) → `07` compile to docx (`ternB`) + QC dump to `.A/output.md` → `08` figures.
+
+Object chain in `00d`: `raw → raw_selected → raw_nom → raw_pared → raw_std → raw_derived → raw_outcomes → raw_clean → raw_ready → raw_corrected → raw_named`.

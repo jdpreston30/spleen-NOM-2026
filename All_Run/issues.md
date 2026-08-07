@@ -9,6 +9,19 @@
 - Early death (<24 h) is hard to count in a success/failure analysis; PKI excluded them from that analysis (still reported descriptively). Apply the same here? — **RESOLVED: yes, early deaths excluded (NA) from index success, splenic salvage, and survival-dependent course variables (LOS, complications).**
 - Confirm the validity of the early-death coding. — **VALIDATED: `mortality==1 & hospital LOS <24h` (n=12); cross-checked against DeathLocation (early deaths cluster in ED/OR/PACU), ED→OR disposition, and crash markers.**
 
+## Scope decision (surgical team, 2026-07-24): NOM-only cohort
+- **Patients whose index management was operative are EXCLUDED from all analysis.** They are retained only as descriptive/figure context ("just for us to talk about for the fun alluvial figure"). Analysis cohort = Observation + IR.
+- **Patients who had surgery first and IR later are also excluded** ("since initial surgery, still not technically NOM"). Verified in the data: **zero** `ARM 2/3` patients had an operation first, so `ARM != 1` cleanly captures the NOM cohort.
+- **Patients who failed NOM and later went to OR are RETAINED** — that is the NOM-failure outcome.
+- **IR arm is intention-to-treat**: patients taken to angiography without embolization stay in the IR group (matching PKI), with a dedicated sub-analysis (Table 5) comparing embolized vs non-embolized.
+- **Consequence:** the paper can no longer make OR-vs-NOM comparisons, and the dramatic salvage contrast (3% operative vs ~90% NOM) is lost; the message becomes "NOM preserves ~90% of spleens." Table 2 also drops from a 3-group to a 2-group comparison, so all p-values change.
+- **Note:** the team referred to "the fun alluvial figure you made" — no alluvial exists yet for the spleen project (that was Courtney's PKI figure). If they want one showing all patients including the operative arm, it still needs to be built.
+
+## Modelling decisions (documented)
+- **Predictors are pre-specified on clinical grounds, not selected by p-value.** Grade is retained regardless of significance (severity confounder). ISS was rejected as a predictor because it is computed post hoc (not known at the NOM-decision timepoint). MAP was chosen over a dichotomized SBP<90 as the hemodynamic axis (continuous, ~99% complete, available at presentation).
+- **Transfusion axis = MTP activation, not "received any blood."** Rationale: MTP specifically marks massive hemorrhage, whereas any-transfusion is a low bar (53% of the cohort). MTP was not a candidate at initial model specification only because its two era-specific source columns made it appear 71% missing; once reconciled during cleaning it became complete and analyzable. Both variables are reported univariably in Table 5. Note the AIC difference between the two model versions is negligible (185.1 vs 186.5) and is *not* the basis for the choice.
+- **Model size is capped at 3 predictors** (~36 failure events ≈ 12 events per predictor). MTP and "received blood" are not strongly collinear (φ = 0.26), but including both would drop to ~9 events per predictor and was avoided.
+
 ## Data integrity / quality issues (discovered during cleaning & QC)
 
 ### Corrected / handled in the pipeline

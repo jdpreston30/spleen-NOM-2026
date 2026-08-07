@@ -11,11 +11,11 @@ source("R/Scripts/00b_setup.R")
 source("R/Scripts/00c_import.R")
 source("R/Scripts/00d_cleanup.R")
 #+ Analysis scripts
-source("R/Scripts/01_descriptive.R")     # Table 1
-source("R/Scripts/02_mgmt_stratify.R")   # Table 2 (by management strategy)
-source("R/Scripts/03_grade_stratify.R")  # Table 3 (by AAST grade)
-source("R/Scripts/04_success_salvage.R") # Table 4 (success + salvage)
+source("R/Scripts/01_mgmt_stratify.R")   # Table 1 (Total + Observation vs IR)
+source("R/Scripts/02_grade_stratify.R")  # Table 2 (by AAST grade)
+source("R/Scripts/03_success_salvage.R") # Table 3 (success + salvage)
+source("R/Scripts/04_ir_subanalysis.R")  # Table 4 (IR: embolized vs not)
 source("R/Scripts/05_model.R")           # Tables 5 & 6 (univariable screen + NOM-failure model)
-source("R/Scripts/06_compile.R")         # Compile T1-T6 to docx
+source("R/Scripts/06_compile.R")         # Compile T1-T6 to docx + QC dump
 source("R/Scripts/07_figure.R")          # Figures (salvage bar + OR forest)
 }

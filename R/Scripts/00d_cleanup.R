@@ -3,8 +3,15 @@
 #- 0d.1.1: Inclusion/Exclusion
 raw_selected <- raw |>
   filter(Inclusion == 1)
-#- 0d.1.2: Removing useless variables
-raw_pared <- raw_selected |>
+#- 0d.1.2: Restrict to the nonoperative management (NOM) cohort
+# Per the surgical team, patients whose INDEX management was operative are excluded from
+# all analysis (they appear only as descriptive/figure context). Verified that no ARM 2/3
+# patient underwent an operation first, so ARM != 1 fully captures the NOM cohort.
+# Patients who later required OR after failed NOM are RETAINED — that is the NOM failure.
+raw_nom <- raw_selected |>
+  filter(ARM != 1)
+#- 0d.1.3: Removing useless variables
+raw_pared <- raw_nom |>
   select(-c(
     # Grade duplicates — SpleenAIS is the truth grade variable
     CTGrade, SpleenAIS_A,
@@ -54,7 +61,7 @@ raw_pared <- raw_selected |>
     UnplannedIntubation, UnplannedReturntoICU, Delirium, Selfharmecode,
     Prearrivalcardiacarrest, PrehospitalCPR
   ))
-#- 0d.1.3: Standardize missingness + rescue the blood flags
+#- 0d.1.4: Standardize missingness + rescue the blood flags
 # Global: trim whitespace; convert "", common NA-tokens, and the 999 sentinel to real
 # NA (999 confirmed always a not-applicable sentinel, never a real value). "*" is NOT
 # globally nulled — it means "yes" in the rescued blood flags, recoded explicitly first.
@@ -93,21 +100,21 @@ raw_pared <- raw_selected |>
 }
 #+ 0d.2: Deriving analysis variables
 #- 0d.2.1: Management strategy — recode ARM/Second_ARM into descriptive labels
-# Mirrors the PKI IR grouping: ARM 3 = the angiography/IR pathway (whether or not
-# an embolization was ultimately performed). ARM 1 = operative; ARM 2 = observation.
-# ir_procedure is the within-IR sub-type (embolization vs diagnostic angiogram only),
-# analogous to PKI's IR_max1_derived, and is NA outside the IR arm.
+# NOM cohort only (operative-index patients already excluded in 0d.1.2), so the
+# strategy is 2-level: Observation vs Interventional Radiology. Following PKI, the IR
+# arm is intention-to-treat — it includes patients taken to angiography who were not
+# ultimately embolized. ir_procedure is the within-IR sub-type (embolization vs
+# diagnostic angiogram only), analogous to PKI's IR_max1_derived, NA outside the IR arm.
 {
   raw_derived <- raw_std |>
     mutate(
       management_strategy = factor(
         case_when(
-          ARM == 1 ~ "Operative",
           ARM == 3 ~ "Interventional Radiology",   # embolization + angio-only both here
           ARM == 2 ~ "Observation",
           TRUE     ~ NA_character_
         ),
-        levels = c("Observation", "Interventional Radiology", "Operative")
+        levels = c("Observation", "Interventional Radiology")
       ),
       ir_procedure = factor(
         case_when(
@@ -123,7 +130,7 @@ raw_pared <- raw_selected |>
   # present for exactly the IR arm and matching Second_ARM.
   stopifnot(
     !anyNA(raw_derived$management_strategy),
-    all((raw_derived$management_strategy == "Operative")    == (raw_derived$ARM == 1)),
+    !any(raw_derived$ARM == 1),   # operative-index patients must already be excluded
     all((raw_derived$management_strategy == "Interventional Radiology") == (raw_derived$ARM == 3)),
     all((raw_derived$management_strategy == "Observation")  == (raw_derived$ARM == 2)),
     all(is.na(raw_derived$ir_procedure) == (raw_derived$ARM != 3)),
@@ -244,15 +251,17 @@ raw_pared <- raw_selected |>
   raw_ready <- raw_clean |>
     mutate(
       MAP = (2 * VitalsDBP + VitalsSBP) / 3,
+      # MTPmid2020ampprior is explicit Yes/No/"-"(other era); MBPmid2020current is a
+      # presence-only flag (YES or blank), so a blank there means No — verified against
+      # transfusion volume (MTP Yes: median 2100 cc RBC; MTP No: median 0 cc).
       MTP = factor(case_when(
         toupper(trimws(as.character(MTPmid2020ampprior))) == "YES" ~ "Yes",
         toupper(trimws(as.character(MBPmid2020current)))  == "YES" ~ "Yes",
-        toupper(trimws(as.character(MTPmid2020ampprior))) == "NO"  ~ "No",
-        TRUE                                                       ~ NA_character_
+        TRUE                                                       ~ "No"
       ), levels = c("No", "Yes"))
     ) |>
     select(-c(MTPmid2020ampprior, MBPmid2020current))
-  stopifnot(is.numeric(raw_ready$MAP), is.factor(raw_ready$MTP))
+  stopifnot(is.numeric(raw_ready$MAP), is.factor(raw_ready$MTP), !anyNA(raw_ready$MTP))
 }
 #+ 0d.4: Data oddities corrections (documented manual fixes)
 # One patient has an implausibly low recorded height (<120 cm) that produces an
